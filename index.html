@@ -20,6 +20,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            overflow: hidden;
         }
 
         .content {
@@ -30,6 +31,8 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             max-width: 800px;
             width: 90%;
+            position: relative;
+            z-index: 1;
         }
 
         h1 {
@@ -61,12 +64,31 @@
             height: 100%;
             border: none;
         }
+
+        .sparkle {
+            position: fixed;
+            pointer-events: none;
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+            animation: fall linear forwards;
+            z-index: 0;
+            box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
     </style>
 </head>
 <body>
     <div class="content">
         <h1>Welkom bij Bloppie.nl</h1>
         <p>Ik hoop dat je het hier leuk vindt!</p>
+        
         <div class="video-container">
             <iframe 
                 src="https://www.youtube.com/embed/KMuYY07cZh4" 
@@ -76,5 +98,39 @@
             </iframe>
         </div>
     </div>
+
+    <script>
+        function createSparkle() {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            
+            // Random position
+            sparkle.style.left = Math.random() * 100 + 'vw';
+            sparkle.style.top = '-10px';
+            
+            // Random size (now larger)
+            const size = Math.random() * 6 + 4;
+            sparkle.style.width = size + 'px';
+            sparkle.style.height = size + 'px';
+            
+            // Random color
+            const colors = ['#ffeb3b', '#ffb74d', '#f48fb1', '#ce93d8', '#90caf9'];
+            sparkle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            // Slower animation duration
+            const duration = Math.random() * 4 + 4;
+            sparkle.style.animationDuration = duration + 's';
+            
+            document.body.appendChild(sparkle);
+            
+            // Remove sparkle after animation
+            setTimeout(() => {
+                sparkle.remove();
+            }, duration * 1000);
+        }
+
+        // Create sparkles more frequently
+        setInterval(createSparkle, 100);
+    </script>
 </body>
 </html> 
