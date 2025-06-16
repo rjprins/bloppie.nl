@@ -79,12 +79,53 @@
             transform: rotate(8deg);
         }
 
-        .joke-question {
+        .joke-box-2 {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            min-width: 300px;
+            max-width: 400px;
+            position: relative;
+            z-index: 1;
+            align-self: center;
+            margin-top: 4rem;
+            transform: rotate(-5deg);
+        }
+
+        .joke-text {
             color: #333;
             font-size: 1.4em;
             margin-bottom: 1rem;
             font-weight: bold;
+            line-height: 1.4;
         }
+
+        .joke-text .bang {
+            font-size: 1.8em;
+            color: #ff4444;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            display: inline-block;
+            transform: rotate(-5deg);
+        }
+
+        .joke-text .cactus-s {
+            display: inline-block;
+            font-size: 1.4em;
+            transform-origin: left;
+        }
+
+        .joke-text .cactus-s:nth-child(1) { font-size: 1.4em; }
+        .joke-text .cactus-s:nth-child(2) { font-size: 1.3em; }
+        .joke-text .cactus-s:nth-child(3) { font-size: 1.2em; }
+        .joke-text .cactus-s:nth-child(4) { font-size: 1.1em; }
+        .joke-text .cactus-s:nth-child(5) { font-size: 1.0em; }
+        .joke-text .cactus-s:nth-child(6) { font-size: 0.9em; }
+        .joke-text .cactus-s:nth-child(7) { font-size: 0.8em; }
+        .joke-text .cactus-s:nth-child(8) { font-size: 0.7em; }
+        .joke-text .cactus-s:nth-child(9) { font-size: 0.6em; }
 
         .joke-answer {
             color: #444;
@@ -177,8 +218,16 @@
         </div>
 
         <div class="joke-box">
-            <div class="joke-question">Hoe noem je een langzaam reptiel?</div>
+            <div class="joke-text">Hoe noem je een langzaam reptiel?</div>
             <div class="joke-answer">Een tragedis</div>
+        </div>
+
+        <div class="joke-box-2">
+            <div class="joke-text">Er lopen twee ballonnen door de woestijn,<br>
+            zegt de ene tegen de andere:<br>
+            "Kijk uit! Een cactuss<span class="cactus-s">s</span><span class="cactus-s">s</span><span class="cactus-s">s</span><span class="cactus-s">s</span><span class="cactus-s">s</span><span class="cactus-s">s</span><span class="cactus-s">s</span>...."<br>
+            Roept de ander:<br>
+            "Ik ben niet... <span class="bang">BANG!</span>"</div>
         </div>
     </div>
 
