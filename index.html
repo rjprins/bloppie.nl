@@ -289,61 +289,26 @@
             }
         }
 
-        .comet {
-            --comet-y: 16vh;
-            --comet-travel: 120vw;
-            --comet-scale: 1;
-            --comet-duration: 2.8s;
-
+        .comet-scene {
             position: fixed;
-            top: var(--comet-y);
-            left: -180px;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
+            inset: 0;
             pointer-events: none;
             z-index: 2;
-            background: radial-gradient(circle at 35% 35%, #ffffff 0 22%, #fff59d 38%, #ff8a65 68%, rgba(255, 138, 101, 0) 72%);
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.9));
-            transform: translate3d(0, 0, 0) rotate(-14deg) scale(var(--comet-scale));
-            animation: cometShoot var(--comet-duration) ease-out forwards;
+            overflow: visible;
         }
 
-        .comet::before {
-            content: "";
-            position: absolute;
-            top: 50%;
-            right: 10px;
-            width: 170px;
-            height: 20px;
-            border-radius: 999px;
-            background: linear-gradient(
-                90deg,
-                rgba(255, 0, 0, 0),
-                rgba(255, 0, 0, 0.75),
-                rgba(255, 154, 0, 0.75),
-                rgba(255, 255, 0, 0.75),
-                rgba(0, 255, 90, 0.75),
-                rgba(0, 170, 255, 0.75),
-                rgba(130, 80, 255, 0.75),
-                rgba(255, 90, 220, 0.75)
-            );
-            filter: blur(1px);
-            transform: translateY(-50%);
+        .comet-tail {
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.65));
         }
 
-        @keyframes cometShoot {
-            0% {
-                opacity: 0;
-                transform: translate3d(0, 0, 0) rotate(-14deg) scale(var(--comet-scale));
-            }
-            10% {
-                opacity: 1;
-            }
-            100% {
-                opacity: 0;
-                transform: translate3d(var(--comet-travel), 24vh, 0) rotate(-14deg) scale(var(--comet-scale));
-            }
+        .comet-head {
+            fill: #fff59d;
+            stroke: rgba(255, 255, 255, 0.9);
+            stroke-width: 2;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 12px rgba(255, 138, 101, 0.8));
         }
 
         @media (max-width: 680px) {
@@ -384,7 +349,7 @@
                 animation-duration: 1ms !important;
             }
 
-            .comet {
+            .comet-scene {
                 display: none;
             }
         }
@@ -541,22 +506,105 @@
         }
 
         function createComet() {
-            const comet = document.createElement('div');
-            comet.className = 'comet';
+            const svgNs = 'http://www.w3.org/2000/svg';
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const margin = 160;
+            const startY = Math.round(height * (0.08 + Math.random() * 0.45));
+            const endY = Math.round(height * (0.22 + Math.random() * 0.62));
+            const c1x = Math.round(width * (0.18 + Math.random() * 0.28));
+            const c1y = Math.round(height * (0.02 + Math.random() * 0.72));
+            const c2x = Math.round(width * (0.48 + Math.random() * 0.32));
+            const c2y = Math.round(height * (0.04 + Math.random() * 0.76));
+            const d = `M ${-margin} ${startY} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${width + margin} ${endY}`;
+            const duration = 2600 + Math.random() * 1200;
+            const headRadius = 7 + Math.random() * 4;
+            const tailLength = Math.min(360, Math.max(190, width * 0.26));
+            const colors = ['#ff3b30', '#ff9500', '#ffeb3b', '#34c759', '#32ade6', '#5856d6', '#ff2d92'];
 
-            const startY = Math.round(6 + Math.random() * 46);
-            const scale = (0.75 + Math.random() * 0.55).toFixed(2);
-            const duration = (2.4 + Math.random() * 1.2).toFixed(2);
+            const scene = document.createElementNS(svgNs, 'svg');
+            scene.classList.add('comet-scene');
+            scene.setAttribute('viewBox', `0 0 ${width} ${height}`);
+            scene.setAttribute('aria-hidden', 'true');
 
-            comet.style.setProperty('--comet-y', `${startY}vh`);
-            comet.style.setProperty('--comet-scale', scale);
-            comet.style.setProperty('--comet-duration', `${duration}s`);
+            const guide = document.createElementNS(svgNs, 'path');
+            guide.setAttribute('d', d);
+            guide.setAttribute('fill', 'none');
+            guide.setAttribute('stroke', 'none');
 
-            document.body.appendChild(comet);
+            const tailGroup = document.createElementNS(svgNs, 'g');
+            const tailPaths = colors.map((color, index) => {
+                const path = document.createElementNS(svgNs, 'path');
+                path.classList.add('comet-tail');
+                path.setAttribute('stroke', color);
+                path.setAttribute('stroke-width', String(18 - index * 1.4));
+                path.setAttribute('opacity', String(0.78 - index * 0.055));
+                tailGroup.appendChild(path);
+                return path;
+            });
 
-            window.setTimeout(() => {
-                comet.remove();
-            }, Number(duration) * 1000 + 200);
+            const head = document.createElementNS(svgNs, 'circle');
+            head.classList.add('comet-head');
+            head.setAttribute('r', String(headRadius));
+
+            scene.appendChild(guide);
+            scene.appendChild(tailGroup);
+            scene.appendChild(head);
+            document.body.appendChild(scene);
+
+            const length = guide.getTotalLength();
+            const startedAt = performance.now();
+            let frameId = null;
+
+            function pathSegment(from, to, sampleCount = 7) {
+                if (to <= from) return '';
+                let segment = '';
+                for (let i = 0; i <= sampleCount; i++) {
+                    const distance = from + ((to - from) * i) / sampleCount;
+                    const point = guide.getPointAtLength(Math.min(length, Math.max(0, distance)));
+                    segment += `${i === 0 ? 'M' : ' L'} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`;
+                }
+                return segment;
+            }
+
+            function animate(now) {
+                const elapsed = now - startedAt;
+                const progress = Math.min(1, elapsed / duration);
+                const eased = 1 - Math.pow(1 - progress, 2);
+                const headDistance = eased * length;
+                const headPoint = guide.getPointAtLength(headDistance);
+                const previousPoint = guide.getPointAtLength(Math.max(0, headDistance - 2));
+                const angle = Math.atan2(headPoint.y - previousPoint.y, headPoint.x - previousPoint.x);
+                const visibleTail = Math.min(tailLength, headDistance);
+                const bandLength = visibleTail / colors.length;
+                const opacity = progress < 0.1 ? progress / 0.1 : Math.max(0, (1 - progress) / 0.16);
+
+                scene.style.opacity = String(Math.min(1, opacity));
+                head.setAttribute('cx', headPoint.x.toFixed(1));
+                head.setAttribute('cy', headPoint.y.toFixed(1));
+
+                for (let i = 0; i < tailPaths.length; i++) {
+                    const to = headDistance - bandLength * i;
+                    const from = Math.max(0, to - bandLength * 1.35);
+                    tailPaths[i].setAttribute('d', pathSegment(from, to));
+                }
+
+                head.style.transformOrigin = `${headPoint.x}px ${headPoint.y}px`;
+                head.style.transform = `rotate(${angle}rad)`;
+
+                if (progress < 1) {
+                    frameId = window.requestAnimationFrame(animate);
+                } else {
+                    scene.remove();
+                }
+            }
+
+            frameId = window.requestAnimationFrame(animate);
+
+            return () => {
+                if (frameId) window.cancelAnimationFrame(frameId);
+                scene.remove();
+            };
         }
 
         function startComets() {
@@ -564,10 +612,17 @@
             if (prefersReducedMotion) return null;
 
             let timerId = null;
+            const activeComets = new Set();
             function scheduleNext(isFirstRun = false) {
                 const delayMs = isFirstRun ? 1200 : 6500 + Math.random() * 9000;
                 timerId = window.setTimeout(() => {
-                    createComet();
+                    const stopComet = createComet();
+                    if (stopComet) {
+                        activeComets.add(stopComet);
+                        window.setTimeout(() => {
+                            activeComets.delete(stopComet);
+                        }, 4200);
+                    }
                     scheduleNext();
                 }, delayMs);
             }
@@ -575,6 +630,8 @@
             scheduleNext(true);
             return () => {
                 if (timerId) window.clearTimeout(timerId);
+                for (const stopComet of activeComets) stopComet();
+                activeComets.clear();
             };
         }
 
