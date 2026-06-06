@@ -301,14 +301,18 @@
             fill: none;
             stroke-linecap: round;
             stroke-linejoin: round;
-            filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.65));
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.85));
+        }
+
+        .comet-tail--core {
+            filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.95));
         }
 
         .comet-head {
             fill: #fff59d;
             stroke: rgba(255, 255, 255, 0.9);
-            stroke-width: 2;
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 12px rgba(255, 138, 101, 0.8));
+            stroke-width: 3;
+            filter: drop-shadow(0 0 12px rgba(255, 255, 255, 1)) drop-shadow(0 0 20px rgba(255, 138, 101, 0.95));
         }
 
         @media (max-width: 680px) {
@@ -518,9 +522,9 @@
             const c2y = Math.round(height * (0.04 + Math.random() * 0.76));
             const d = `M ${-margin} ${startY} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${width + margin} ${endY}`;
             const duration = 2600 + Math.random() * 1200;
-            const headRadius = 7 + Math.random() * 4;
-            const tailLength = Math.min(360, Math.max(190, width * 0.26));
-            const colors = ['#ff3b30', '#ff9500', '#ffeb3b', '#34c759', '#32ade6', '#5856d6', '#ff2d92'];
+            const headRadius = 12 + Math.random() * 5;
+            const tailLength = Math.min(520, Math.max(290, width * 0.38));
+            const colors = ['#ffffff', '#ff1744', '#ff9100', '#ffea00', '#00e676', '#00b0ff', '#7c4dff', '#ff2d92'];
 
             const scene = document.createElementNS(svgNs, 'svg');
             scene.classList.add('comet-scene');
@@ -536,9 +540,10 @@
             const tailPaths = colors.map((color, index) => {
                 const path = document.createElementNS(svgNs, 'path');
                 path.classList.add('comet-tail');
+                if (index === 0) path.classList.add('comet-tail--core');
                 path.setAttribute('stroke', color);
-                path.setAttribute('stroke-width', String(18 - index * 1.4));
-                path.setAttribute('opacity', String(0.78 - index * 0.055));
+                path.setAttribute('stroke-width', index === 0 ? '9' : String(28 - index * 2.1));
+                path.setAttribute('opacity', index === 0 ? '0.9' : String(0.92 - index * 0.06));
                 tailGroup.appendChild(path);
                 return path;
             });
