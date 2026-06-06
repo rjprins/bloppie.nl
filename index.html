@@ -289,6 +289,63 @@
             }
         }
 
+        .comet {
+            --comet-y: 16vh;
+            --comet-travel: 120vw;
+            --comet-scale: 1;
+            --comet-duration: 2.8s;
+
+            position: fixed;
+            top: var(--comet-y);
+            left: -180px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 2;
+            background: radial-gradient(circle at 35% 35%, #ffffff 0 22%, #fff59d 38%, #ff8a65 68%, rgba(255, 138, 101, 0) 72%);
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.9));
+            transform: translate3d(0, 0, 0) rotate(-14deg) scale(var(--comet-scale));
+            animation: cometShoot var(--comet-duration) ease-out forwards;
+        }
+
+        .comet::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            width: 170px;
+            height: 20px;
+            border-radius: 999px;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0),
+                rgba(255, 0, 0, 0.75),
+                rgba(255, 154, 0, 0.75),
+                rgba(255, 255, 0, 0.75),
+                rgba(0, 255, 90, 0.75),
+                rgba(0, 170, 255, 0.75),
+                rgba(130, 80, 255, 0.75),
+                rgba(255, 90, 220, 0.75)
+            );
+            filter: blur(1px);
+            transform: translateY(-50%);
+        }
+
+        @keyframes cometShoot {
+            0% {
+                opacity: 0;
+                transform: translate3d(0, 0, 0) rotate(-14deg) scale(var(--comet-scale));
+            }
+            10% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translate3d(var(--comet-travel), 24vh, 0) rotate(-14deg) scale(var(--comet-scale));
+            }
+        }
+
         @media (max-width: 680px) {
             .container {
                 grid-template-columns: 1fr;
@@ -325,6 +382,10 @@
 
             .sparkle {
                 animation-duration: 1ms !important;
+            }
+
+            .comet {
+                display: none;
             }
         }
     </style>
@@ -479,6 +540,44 @@
             };
         }
 
+        function createComet() {
+            const comet = document.createElement('div');
+            comet.className = 'comet';
+
+            const startY = Math.round(6 + Math.random() * 46);
+            const scale = (0.75 + Math.random() * 0.55).toFixed(2);
+            const duration = (2.4 + Math.random() * 1.2).toFixed(2);
+
+            comet.style.setProperty('--comet-y', `${startY}vh`);
+            comet.style.setProperty('--comet-scale', scale);
+            comet.style.setProperty('--comet-duration', `${duration}s`);
+
+            document.body.appendChild(comet);
+
+            window.setTimeout(() => {
+                comet.remove();
+            }, Number(duration) * 1000 + 200);
+        }
+
+        function startComets() {
+            const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (prefersReducedMotion) return null;
+
+            let timerId = null;
+            function scheduleNext(isFirstRun = false) {
+                const delayMs = isFirstRun ? 1200 : 6500 + Math.random() * 9000;
+                timerId = window.setTimeout(() => {
+                    createComet();
+                    scheduleNext();
+                }, delayMs);
+            }
+
+            scheduleNext(true);
+            return () => {
+                if (timerId) window.clearTimeout(timerId);
+            };
+        }
+
         function shuffleCardsExceptWelcome() {
             const container = document.querySelector('.container');
             if (!container) return;
@@ -584,6 +683,7 @@
 
         let sparkleInterval = startSparkles();
         let stopWiggles = startCardWiggles();
+        let stopComets = startComets();
 
         // Masonry sizing should happen after fonts/layout settle.
         resizeMasonry();
@@ -598,6 +698,9 @@
 
             if (stopWiggles) stopWiggles();
             stopWiggles = startCardWiggles();
+
+            if (stopComets) stopComets();
+            stopComets = startComets();
 
             applyMaybeWideCards();
             randomizeCardSpacing();
