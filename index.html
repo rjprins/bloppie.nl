@@ -161,6 +161,27 @@
             background: linear-gradient(135deg, #b7f7c7 0%, #86efac 55%, #4ade80 100%);
         }
 
+        .card--joke-yellow {
+            background: linear-gradient(135deg, #fffde7 0%, #fff9c4 55%, #ffecb3 100%);
+        }
+
+        .card--joke-lilac {
+            background: linear-gradient(135deg, #e1bee7 0%, var(--bg-lilac) 55%, #b39ddb 100%);
+        }
+
+        .card--joke-long .joke-answer {
+            transform: none;
+            display: block;
+            margin-top: 0.75rem;
+            font-size: clamp(1.1rem, 0.8vw + 0.9rem, 1.35rem);
+            line-height: 1.35;
+        }
+
+        .card--joke-long .joke-answer.joke-answer--upside-down {
+            transform: rotate(180deg);
+            transform-origin: center;
+        }
+
         .card--joke2 {
             text-align: center;
             background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
@@ -344,9 +365,19 @@
             <div class="joke-answer">Een tragedis</div>
         </section>
 
+        <section class="card card--joke card--joke-yellow card--maybe-wide">
+            <div class="joke-text">Wie mogen er geen lid worden van de bibliotheek?</div>
+            <div class="joke-answer">boekhouders</div>
+        </section>
+
         <section class="card card--joke card--joke-green card--maybe-wide">
             <div class="joke-text">Wat is de verleden tijd van komkommersla?</div>
             <div class="joke-answer">kwamkwammersloeg</div>
+        </section>
+
+        <section class="card card--joke card--joke-lilac card--joke-long card--maybe-wide">
+            <div class="joke-text">Wat krijg je als je een specht met een postduif kruist?</div>
+            <div class="joke-answer joke-answer--upside-down">Een vogel die netjes aanklopt voor hij de post bij je bezorgd</div>
         </section>
 
         <section class="card card--joke2 card--maybe-wide">
