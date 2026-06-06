@@ -634,7 +634,11 @@
             const svgNs = 'http://www.w3.org/2000/svg';
             const width = window.innerWidth;
             const height = window.innerHeight;
-            const margin = 160;
+            const duration = 2600 + Math.random() * 1200;
+            const headRadius = 14 + Math.random() * 5;
+            const tailLength = Math.min(620, Math.max(340, width * 0.44));
+            const margin = Math.ceil(tailLength + headRadius * 8 + 220);
+            const colors = ['#ffffff', '#ff1744', '#ff9100', '#ffea00', '#00e676', '#00b0ff', '#7c4dff', '#ff2d92'];
 
             function randomBetween(min, max) {
                 return min + Math.random() * (max - min);
@@ -671,10 +675,6 @@
                 y: start.y + dy * 0.7 + (center.y - end.y) * 0.24 + perp.y * randomBetween(-curve, curve)
             };
             const d = `M ${start.x.toFixed(1)} ${start.y.toFixed(1)} C ${c1.x.toFixed(1)} ${c1.y.toFixed(1)}, ${c2.x.toFixed(1)} ${c2.y.toFixed(1)}, ${end.x.toFixed(1)} ${end.y.toFixed(1)}`;
-            const duration = 2600 + Math.random() * 1200;
-            const headRadius = 14 + Math.random() * 5;
-            const tailLength = Math.min(620, Math.max(340, width * 0.44));
-            const colors = ['#ffffff', '#ff1744', '#ff9100', '#ffea00', '#00e676', '#00b0ff', '#7c4dff', '#ff2d92'];
 
             const scene = document.createElementNS(svgNs, 'svg');
             scene.classList.add('comet-scene');
@@ -780,7 +780,7 @@
                 const angle = Math.atan2(headPoint.y - previousPoint.y, headPoint.x - previousPoint.x);
                 const visibleTail = Math.min(tailLength, headDistance);
                 const bandLength = visibleTail / colors.length;
-                const opacity = progress < 0.1 ? progress / 0.1 : Math.max(0, (1 - progress) / 0.16);
+                const opacity = progress < 0.1 ? progress / 0.1 : 1;
 
                 scene.style.opacity = String(Math.min(1, opacity));
                 tailGlow.setAttribute('d', pathSegment(Math.max(0, headDistance - visibleTail), headDistance, 20));
@@ -832,25 +832,47 @@
             const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             if (prefersReducedMotion) return null;
 
-            let timerId = null;
+            const timerIds = new Set();
             const activeComets = new Set();
+
+            function scheduleTimer(callback, delayMs) {
+                const timerId = window.setTimeout(() => {
+                    timerIds.delete(timerId);
+                    callback();
+                }, delayMs);
+                timerIds.add(timerId);
+            }
+
+            function launchComet() {
+                const stopComet = createComet();
+                if (stopComet) {
+                    activeComets.add(stopComet);
+                    window.setTimeout(() => {
+                        activeComets.delete(stopComet);
+                    }, 4200);
+                }
+            }
+
+            function launchBurst(isFirstRun = false) {
+                const count = isFirstRun ? 2 : 2 + (Math.random() < 0.45 ? 1 : 0);
+                for (let i = 0; i < count; i++) {
+                    const staggerMs = i * (220 + Math.random() * 380);
+                    scheduleTimer(launchComet, staggerMs);
+                }
+            }
+
             function scheduleNext(isFirstRun = false) {
-                const delayMs = isFirstRun ? 1200 : 6500 + Math.random() * 9000;
-                timerId = window.setTimeout(() => {
-                    const stopComet = createComet();
-                    if (stopComet) {
-                        activeComets.add(stopComet);
-                        window.setTimeout(() => {
-                            activeComets.delete(stopComet);
-                        }, 4200);
-                    }
+                const delayMs = isFirstRun ? 900 : 4200 + Math.random() * 5200;
+                scheduleTimer(() => {
+                    launchBurst(isFirstRun);
                     scheduleNext();
                 }, delayMs);
             }
 
             scheduleNext(true);
             return () => {
-                if (timerId) window.clearTimeout(timerId);
+                for (const timerId of timerIds) window.clearTimeout(timerId);
+                timerIds.clear();
                 for (const stopComet of activeComets) stopComet();
                 activeComets.clear();
             };
