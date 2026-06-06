@@ -635,13 +635,42 @@
             const width = window.innerWidth;
             const height = window.innerHeight;
             const margin = 160;
-            const startY = Math.round(height * (0.08 + Math.random() * 0.45));
-            const endY = Math.round(height * (0.22 + Math.random() * 0.62));
-            const c1x = Math.round(width * (0.18 + Math.random() * 0.28));
-            const c1y = Math.round(height * (0.02 + Math.random() * 0.72));
-            const c2x = Math.round(width * (0.48 + Math.random() * 0.32));
-            const c2y = Math.round(height * (0.04 + Math.random() * 0.76));
-            const d = `M ${-margin} ${startY} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${width + margin} ${endY}`;
+
+            function randomBetween(min, max) {
+                return min + Math.random() * (max - min);
+            }
+
+            function pointFromSide(side) {
+                if (side === 'left') return { x: -margin, y: randomBetween(height * 0.08, height * 0.92) };
+                if (side === 'right') return { x: width + margin, y: randomBetween(height * 0.08, height * 0.92) };
+                if (side === 'top') return { x: randomBetween(width * 0.08, width * 0.92), y: -margin };
+                return { x: randomBetween(width * 0.08, width * 0.92), y: height + margin };
+            }
+
+            const sides = ['left', 'right', 'top', 'bottom'];
+            const startSide = sides[Math.floor(Math.random() * sides.length)];
+            const endSides = sides.filter((side) => side !== startSide);
+            const endSide = endSides[Math.floor(Math.random() * endSides.length)];
+            const start = pointFromSide(startSide);
+            const end = pointFromSide(endSide);
+            const center = {
+                x: randomBetween(width * 0.34, width * 0.66),
+                y: randomBetween(height * 0.28, height * 0.72)
+            };
+            const dx = end.x - start.x;
+            const dy = end.y - start.y;
+            const distance = Math.hypot(dx, dy) || 1;
+            const perp = { x: -dy / distance, y: dx / distance };
+            const curve = Math.min(520, Math.max(170, distance * 0.28));
+            const c1 = {
+                x: start.x + dx * 0.3 + (center.x - start.x) * 0.24 + perp.x * randomBetween(-curve, curve),
+                y: start.y + dy * 0.3 + (center.y - start.y) * 0.24 + perp.y * randomBetween(-curve, curve)
+            };
+            const c2 = {
+                x: start.x + dx * 0.7 + (center.x - end.x) * 0.24 + perp.x * randomBetween(-curve, curve),
+                y: start.y + dy * 0.7 + (center.y - end.y) * 0.24 + perp.y * randomBetween(-curve, curve)
+            };
+            const d = `M ${start.x.toFixed(1)} ${start.y.toFixed(1)} C ${c1.x.toFixed(1)} ${c1.y.toFixed(1)}, ${c2.x.toFixed(1)} ${c2.y.toFixed(1)}, ${end.x.toFixed(1)} ${end.y.toFixed(1)}`;
             const duration = 2600 + Math.random() * 1200;
             const headRadius = 14 + Math.random() * 5;
             const tailLength = Math.min(620, Math.max(340, width * 0.44));
