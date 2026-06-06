@@ -289,6 +289,50 @@
             }
         }
 
+        .heart {
+            --heart-size: 26px;
+            --heart-dx: 120px;
+            --heart-dy: -180px;
+            --heart-rotation: 18deg;
+            --heart-duration: 6s;
+
+            position: fixed;
+            pointer-events: none;
+            z-index: 1;
+            width: var(--heart-size);
+            height: var(--heart-size);
+            color: #ff4f9a;
+            opacity: 0;
+            transform: translate3d(0, 0, 0) rotate(0deg) scale(0.75);
+            animation: heartFloat var(--heart-duration) ease-in-out forwards;
+            filter: drop-shadow(0 3px 5px rgba(255, 255, 255, 0.8)) drop-shadow(0 5px 10px rgba(244, 143, 177, 0.55));
+        }
+
+        .heart::before {
+            content: "\2665";
+            display: block;
+            font-family: Arial, sans-serif;
+            font-size: var(--heart-size);
+            line-height: 1;
+        }
+
+        @keyframes heartFloat {
+            0% {
+                opacity: 0;
+                transform: translate3d(0, 0, 0) rotate(-8deg) scale(0.55);
+            }
+            18% {
+                opacity: 0.88;
+            }
+            56% {
+                transform: translate3d(calc(var(--heart-dx) * 0.45), calc(var(--heart-dy) * 0.55), 0) rotate(calc(var(--heart-rotation) * -0.4)) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate3d(var(--heart-dx), var(--heart-dy), 0) rotate(var(--heart-rotation)) scale(0.72);
+            }
+        }
+
         .comet-scene {
             position: fixed;
             inset: 0;
@@ -375,6 +419,10 @@
             }
 
             .sparkle {
+                animation-duration: 1ms !important;
+            }
+
+            .heart {
                 animation-duration: 1ms !important;
             }
 
@@ -493,6 +541,42 @@
             const isSmall = window.matchMedia && window.matchMedia('(max-width: 680px)').matches;
             const intervalMs = isSmall ? 320 : 180;
             return window.setInterval(createSparkle, intervalMs);
+        }
+
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+
+            const size = Math.round(18 + Math.random() * 24);
+            const dx = Math.round((Math.random() - 0.5) * 320);
+            const dy = Math.round(-110 - Math.random() * 230);
+            const rotation = Math.round((Math.random() - 0.5) * 70);
+            const duration = 5.5 + Math.random() * 3.8;
+            const colors = ['#ff4f9a', '#ff6f61', '#f48fb1', '#ec407a', '#ff8a80', '#ce93d8'];
+
+            heart.style.left = Math.round(4 + Math.random() * 92) + 'vw';
+            heart.style.top = Math.round(24 + Math.random() * 68) + 'vh';
+            heart.style.color = colors[Math.floor(Math.random() * colors.length)];
+            heart.style.setProperty('--heart-size', `${size}px`);
+            heart.style.setProperty('--heart-dx', `${dx}px`);
+            heart.style.setProperty('--heart-dy', `${dy}px`);
+            heart.style.setProperty('--heart-rotation', `${rotation}deg`);
+            heart.style.setProperty('--heart-duration', `${duration}s`);
+
+            document.body.appendChild(heart);
+
+            window.setTimeout(() => {
+                heart.remove();
+            }, duration * 1000 + 200);
+        }
+
+        function startHearts() {
+            const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (prefersReducedMotion) return null;
+
+            const isSmall = window.matchMedia && window.matchMedia('(max-width: 680px)').matches;
+            const intervalMs = isSmall ? 1800 : 1050;
+            return window.setInterval(createHeart, intervalMs);
         }
 
         function startCardWiggles() {
@@ -847,6 +931,7 @@
         randomizeCardSpacing();
 
         let sparkleInterval = startSparkles();
+        let heartInterval = startHearts();
         let stopWiggles = startCardWiggles();
         let stopComets = startComets();
 
@@ -860,6 +945,9 @@
         window.addEventListener('resize', () => {
             if (sparkleInterval) window.clearInterval(sparkleInterval);
             sparkleInterval = startSparkles();
+
+            if (heartInterval) window.clearInterval(heartInterval);
+            heartInterval = startHearts();
 
             if (stopWiggles) stopWiggles();
             stopWiggles = startCardWiggles();
